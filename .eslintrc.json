@@ -1,0 +1,61 @@
+{
+    "overrides": [
+        {
+            "files": [
+                "*.vue"
+            ],
+            "parser": "vue-eslint-parser"
+        },
+        {
+            "files": [
+                "*.vue",
+                "*.ts",
+                "*.tsx",
+                "*.js",
+                "*.jsx"
+            ],
+            "env": {
+                "node": true
+            },
+            "extends": [
+                "plugin:@typescript-eslint/recommended",
+                "plugin:@stylistic/recommended-extends",
+                "plugin:vue/vue3-recommended",
+                "@vue/eslint-config-typescript"
+            ],
+            "parserOptions": {
+                "ecmaVersion": "latest",
+                "ecmaFeatures": {
+                    "jsx": true
+                }
+            },
+            "rules": {
+                "@typescript-eslint/no-explicit-any": "off",
+                "@stylistic/indent": "warn",
+                "@stylistic/no-trailing-spaces": "warn",
+                "@stylistic/max-statements-per-line": "warn",
+                "@stylistic/block-spacing": "warn",
+                "@stylistic/arrow-parens": "warn",
+                "@stylistic/padded-blocks": "warn",
+                "@stylistic/member-delimiter-style": "warn",
+                "@stylistic/jsx-one-expression-per-line": "off",
+                "@stylistic/brace-style": "off",
+                "@stylistic/comma-dangle": "warn",
+                "@stylistic/no-extra-semi": "off",
+                "@stylistic/no-control-regex": "off",
+                "@stylistic/function-call-argument-newline": [
+                    "warn",
+                    "consistent"
+                ],
+                "@stylistic/function-paren-newline": "warn",
+                "@stylistic/jsx-closing-tag-location": "off",
+                "vue/multi-word-component-names": "off",
+                "vue/prefer-import-from-vue": "off",
+                "vue/no-v-text-v-html-on-component": "off",
+                "vue/require-prop-types": "off",
+                "vue/html-self-closing": "off",
+                "vue/attribute-hyphenation": "off"
+            }
+        }
+    ]
+}
