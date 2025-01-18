@@ -1,5 +1,5 @@
 # MyGO Replyer
-AI買夠廚 chrome extension
+AI買夠廚 chrome extension  
 選取文字後可以透過 Gemini 取得推薦的 MyGO 截圖回覆
 
 [![demo](docs/demo.png)](docs/go.mp4)
