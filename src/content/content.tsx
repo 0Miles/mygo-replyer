@@ -1,6 +1,5 @@
 import { render } from 'vue'
 import MyGoButton from '../components/MyGoButton.vue'
-import '.virtual/master.css'
 
 let buttonContainer: HTMLElement | null = null
 

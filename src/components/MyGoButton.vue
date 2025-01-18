@@ -3,6 +3,8 @@ import { computed, ref } from 'vue'
 import { useGemini } from '../api/gemini'
 import { useMyGo, type MyGoUrl } from '../api/my-go'
 import { MyGoIcon } from '../images/mygo-icon'
+import CSSRuntimeProvider from '@master/css.vue'
+import config from '../../master.css'
 
 const props = defineProps<{
   selectedText: string
@@ -74,56 +76,58 @@ const handleImgClick = async (url: string, e: Event) => {
 }
 </script>
 <template>
-  <div class="flex r:4 min-w:32 min-h:32 max-w:300 max-h:300 overflow-x:auto b:1|solid|gray-70 bg:gray-90">
-    <button
-      v-if="!isLoading && !myGoUrls?.length && !displayError"
-      type="button"
-      class="overflow:hidden! w:32! h:32! p:0! m:0! b:none! outline:none!"
-      @click="handleGoClick"
-    >
-      <img
-        :src="MyGoIcon"
-        width="100%"
-        class="pointer-events:none object:contain"
-      />
-    </button>
-    <div
-      v-show="isLoading"
-      class="abs w:32 h:32 p:8"
-    >
-      <div class="loading f:16"></div>
-    </div>
-    <div
-      v-if="myGoUrls?.length"
-      class="flex flex:col gap:8"
-    >
-      <div class="flex gap:8 p:8|12">
-        <div
-          v-for="urlData in myGoUrls"
-          :key="urlData.url"
-          class="rel flex r:4 overflow:hidden cursor:pointer transform:scale(1.05):hover transform:scale(.95):active ~transform|.25s|ease"
-        >
-          <img
-            :src="urlData.url"
-            :alt="urlData.alt"
-            width="240"
-            @click="(e: Event) => handleImgClick(urlData.url, e)"
-          />
+  <CSSRuntimeProvider :config="config">
+    <div class="flex r:4 min-w:32 min-h:32 max-w:300 max-h:300 overflow-x:auto b:1|solid|gray-70 bg:gray-90">
+      <button
+        v-if="!isLoading && !myGoUrls?.length && !displayError"
+        type="button"
+        class="overflow:hidden! w:32! h:32! p:0! m:0! b:none! outline:none!"
+        @click="handleGoClick"
+      >
+        <img
+          :src="MyGoIcon"
+          width="100%"
+          class="pointer-events:none object:contain"
+        />
+      </button>
+      <div
+        v-show="isLoading"
+        class="abs w:32 h:32 p:8"
+      >
+        <div class="loading f:16"></div>
+      </div>
+      <div
+        v-if="myGoUrls?.length"
+        class="flex flex:col gap:8"
+      >
+        <div class="flex gap:8 p:8|12">
           <div
-            class="abs inset:0 flex center-content pointer-events:none ~opacity|.3s|ease-in bg:black/.7 opacity:0 img.copied+{opacity:1}"
+            v-for="urlData in myGoUrls"
+            :key="urlData.url"
+            class="rel flex r:4 overflow:hidden cursor:pointer transform:scale(1.05):hover transform:scale(.95):active ~transform|.25s|ease"
           >
-            <span class="fg:white">Copied!</span>
+            <img
+              :src="urlData.url"
+              :alt="urlData.alt"
+              width="240"
+              @click="(e: Event) => handleImgClick(urlData.url, e)"
+            />
+            <div
+              class="abs inset:0 flex center-content pointer-events:none ~opacity|.3s|ease-in bg:black/.7 opacity:0 img.copied+{opacity:1}"
+            >
+              <span class="fg:white">Copied!</span>
+            </div>
           </div>
         </div>
       </div>
+      <div
+        v-if="displayError"
+        class="flex center-content p:8|16"
+      >
+        <span class="fg:red">{{ displayError }}</span>
+      </div>
     </div>
-    <div
-      v-if="displayError"
-      class="flex center-content p:8|16"
-    >
-      <span class="fg:red">{{ displayError }}</span>
-    </div>
-  </div>
+  </CSSRuntimeProvider>
 </template>
 
 <style scoped>
