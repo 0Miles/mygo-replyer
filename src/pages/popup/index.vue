@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue'
 import { useConfigManager } from '../../utils/config-manager'
+import { geminiModels } from '../../utils/gemini-models'
 import MyGoButton from '../../components/MyGoButton.vue'
 
 console.log(MyGoButton)
@@ -8,7 +9,7 @@ const configManager = useConfigManager()
 
 const configModel = reactive<Record<string, string>>({
   geminiApiKey: '',
-  model: 'gemini-1.5-pro',
+  model: geminiModels.default,
 })
 
 const loadKey = async () => {
@@ -16,7 +17,7 @@ const loadKey = async () => {
     const key = await configManager.getConfig('geminiApiKey')
     const model = await configManager.getConfig('model')
     configModel.geminiApiKey = key || ''
-    configModel.model = model || 'gemini-1.5-pro'
+    configModel.model = model || geminiModels.default
   } catch (error) {
     console.error('Failed to load Gemini Key:', error)
   }
@@ -57,29 +58,12 @@ onMounted(() => {
         class="r:3 bg:gray-70 color:white b:none outline:none p:8"
         @change="saveKey('model')"
       >
-        <option value="gemini-1.5-pro">
-          gemini-1.5-pro
-        </option>
-        <option value="gemini-1.5-flash">
-          gemini-1.5-flash
-        </option>
-        <option value="gemini-1.5-flash-8b">
-          gemini-1.5-flash-8b
-        </option>
-        <option value="gemini-2.0-flash-exp">
-          gemini-2.0-flash-exp
-        </option>
-        <option value="gemini-exp-1206">
-          gemini-exp-1206
-        </option>
-        <option value="gemini-2.0-flash-thinking-exp-1219">
-          gemini-2.0-flash-thinking-exp-1219
-        </option>
-        <option value="learnlm-1.5-pro-experimental">
-          learnlm-1.5-pro-experimental
-        </option>
-        <option value="learnlm-1.5-pro-experimental">
-          learnlm-1.5-pro-experimental
+        <option
+          v-for="model in geminiModels.models"
+          :key="model"
+          :value="model"
+        >
+          {{ model }}
         </option>
       </select>
     </div>

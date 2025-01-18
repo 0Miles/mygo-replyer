@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { useConfigManager } from '../utils/config-manager'
+import { geminiModels } from '../utils/gemini-models'
 
 export function useGemini() {
   const isLoading = ref(false)
@@ -30,7 +31,7 @@ export function useGemini() {
     error.value = null
 
     const systemPrompt = loadPrompt()
-    const model = await configManager.getConfig('model')
+    const model = await configManager.getConfig('model') || geminiModels.default
 
     try {
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
