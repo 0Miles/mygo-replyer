@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue'
 import { useConfigManager } from '../../utils/config-manager'
+import MyGoButton from '../../components/MyGoButton.vue'
 
+console.log(MyGoButton)
 const configManager = useConfigManager()
 
 const configModel = reactive<Record<string, string>>({

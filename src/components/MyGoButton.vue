@@ -40,7 +40,7 @@ async function copyBase64ToClipboardAsPng(base64Image: string) {
     canvas.height = img.height
 
     const ctx = canvas.getContext('2d')
-    if (!ctx) throw new Error('無法獲取 Canvas 渲染上下文')
+    if (!ctx) throw new Error('Failed to get 2d context')
 
     ctx.drawImage(img, 0, 0)
 
@@ -58,8 +58,6 @@ async function copyBase64ToClipboardAsPng(base64Image: string) {
     // 創建 ClipboardItem 並複製到剪貼簿
     const clipboardItem = new ClipboardItem({ 'image/png': blob })
     await navigator.clipboard.write([clipboardItem])
-
-    console.log('JPEG 已成功轉換為 PNG 並複製到剪貼簿！')
   } catch {
     error.value = 'Failed to copy image to clipboard'
   }
@@ -121,7 +119,7 @@ const handleImgClick = async (url: string, e: Event) => {
     </div>
     <div
       v-if="displayError"
-      class="flex center-content"
+      class="flex center-content p:8|16"
     >
       <span class="fg:red">{{ displayError }}</span>
     </div>
