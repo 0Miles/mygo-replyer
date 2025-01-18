@@ -91,12 +91,6 @@ const handleImgClick = async (url: string, e: Event) => {
         />
       </button>
       <div
-        v-show="isLoading"
-        class="abs w:32 h:32 p:8"
-      >
-        <div class="loading f:16"></div>
-      </div>
-      <div
         v-if="myGoUrls?.length"
         class="flex flex:col gap:8"
       >
@@ -125,6 +119,12 @@ const handleImgClick = async (url: string, e: Event) => {
         class="flex center-content p:8|16"
       >
         <span class="fg:red">{{ displayError }}</span>
+      </div>
+      <div
+        v-show="isLoading"
+        class="abs w:32 h:32 p:8"
+      >
+        <div class="loading f:16"></div>
       </div>
     </div>
   </CSSRuntimeProvider>
