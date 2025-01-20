@@ -118,7 +118,7 @@ const handlePanelMouseup = (e: Event) => {
     <button
       v-show="initFlag"
       type="button"
-      class="overflow:hidden! w:32! h:32! p:0! m:0! b:none! outline:none! cursor:pointer!"
+      class="overflow:hidden! w:32! h:32! p:0! m:0! b:none! outline:none! cursor:pointer! r:4!"
       @click="handleGoClick"
     >
       <img

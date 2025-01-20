@@ -4,9 +4,6 @@
   "description": "為什麼就不能像其他家的孩子一樣正常講話",
   "version": "1.0.0",
   "permissions": [
-    "identity",
-    "identity.email",
-    "contextMenus",
     "activeTab",
     "storage"
   ],
