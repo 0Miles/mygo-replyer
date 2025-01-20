@@ -1,27 +1,31 @@
 import { render } from 'vue'
-import MyGoButton from '../components/MyGoButton.vue'
+import MyGoPanel from '../components/MyGoPanel.vue'
+import '.virtual/master.css'
 
-let buttonContainer: HTMLElement | null = null
+// import { initCSSRuntime } from '@master/css-runtime'
+// initCSSRuntime()
 
-const showSuggestionButton = (x: number, y: number, selectedText: string) => {
-  removeSuggestionButton()
+let panelContainer: HTMLElement | null = null
 
-  buttonContainer = document.createElement('div')
-  buttonContainer.style.position = 'absolute'
-  buttonContainer.style.left = `${x + 10}px`
-  buttonContainer.style.top = `${y}px`
-  buttonContainer.style.zIndex = '1000'
+const showMyGoPanel = (x: number, y: number, selectedText?: string) => {
+  removeMyGoPanel()
 
-  render(<MyGoButton selectedText={selectedText} />, buttonContainer)
+  panelContainer = document.createElement('div')
+  panelContainer.style.position = 'absolute'
+  panelContainer.style.left = `${x + 10}px`
+  panelContainer.style.top = `${y}px`
+  panelContainer.style.zIndex = '1000'
 
-  document.body.appendChild(buttonContainer)
+  render(<MyGoPanel selectedText={selectedText} />, panelContainer)
+
+  document.body.appendChild(panelContainer)
 }
 
-const removeSuggestionButton = () => {
-  if (buttonContainer) {
-    render(null, buttonContainer)
-    buttonContainer.remove()
-    buttonContainer = null
+const removeMyGoPanel = () => {
+  if (panelContainer) {
+    render(null, panelContainer)
+    panelContainer.remove()
+    panelContainer = null
   }
 }
 
@@ -30,19 +34,31 @@ document.addEventListener('selectionchange', () => {
   selectionchangeFlag = true
 })
 
+;(window as any).stopCloseMyGoPanel = false
+
 document.addEventListener('mouseup', (event: MouseEvent) => {
+  if ((window as any).stopCloseMyGoPanel) {
+    (window as any).stopCloseMyGoPanel = false
+    return
+  }
   if (!selectionchangeFlag) {
     return
   }
   selectionchangeFlag = false
   const selection = window.getSelection()
   const selectedText = selection?.toString().trim()
+  const x = event.clientX + window.scrollX
+  const y = event.clientY + window.scrollY
+
+  const target = event.target as HTMLElement
 
   if (selectedText) {
-    const x = event.clientX + window.scrollX
-    const y = event.clientY + window.scrollY
-    showSuggestionButton(x, y, selectedText)
-  } else {
-    removeSuggestionButton()
+    showMyGoPanel(x, y, selectedText)
+  }
+  else if (!panelContainer && (target.contentEditable || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+    showMyGoPanel(x, y)
+  }
+  else {
+    removeMyGoPanel()
   }
 })

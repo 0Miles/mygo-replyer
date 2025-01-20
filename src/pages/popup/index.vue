@@ -2,9 +2,7 @@
 import { onMounted, reactive } from 'vue'
 import { useConfigManager } from '../../utils/config-manager'
 import { geminiModels } from '../../utils/gemini-models'
-import MyGoButton from '../../components/MyGoButton.vue'
 
-console.log(MyGoButton)
 const configManager = useConfigManager()
 
 const configModel = reactive<Record<string, string>>({
