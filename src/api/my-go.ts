@@ -67,32 +67,22 @@ export const useMyGo = () => {
     error.value = null
 
     try {
-      const response = await fetch(url, { method: 'GET', mode: 'cors', cache: 'no-cache' })
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image, status code: ${response.status}`)
-      }
-
-      const blob = await response.blob()
-      const reader = new FileReader()
-
       return new Promise<string>((resolve, reject) => {
-        reader.onloadend = () => {
-          const base64Data = reader.result as string
-
-          chrome.storage.local.set({ [url]: base64Data }, () => {
-            if (chrome.runtime.lastError) {
-              reject(new Error('Failed to save image to storage'))
-            } else {
-              resolve(base64Data)
-            }
-          })
-        }
-
-        reader.onerror = () => {
-          reject('Failed to convert image to Base64')
-        }
-
-        reader.readAsDataURL(blob)
+        chrome.runtime.sendMessage({ action: 'fetchImage', url }, (response) => {
+          if (response.error) {
+            error.value = response.error
+            reject(new Error(response.error))
+          } else {
+            const base64Data = response.base64Data
+            chrome.storage.local.set({ [url]: base64Data }, () => {
+              if (chrome.runtime.lastError) {
+                reject(new Error('Failed to save image to storage'))
+              } else {
+                resolve(base64Data)
+              }
+            })
+          }
+        })
       })
     } catch (err: any) {
       error.value = err.message || 'Unknown error'

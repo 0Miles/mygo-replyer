@@ -1,56 +1,27 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
-import { useGemini } from '../api/gemini'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useMyGo, type MyGoUrl } from '../api/my-go'
-import { MyGoIcon } from '../images/mygo-icon'
 import { debounce } from 'lodash-es'
 import DragScrollBox from './DragScrollBox.vue'
 
 const props = defineProps<{
-  selectedText?: string
+  keyword?: string
 }>()
 
 const {
-  getResponse,
-  isLoading: geminiIsLoading,
-  error: geminiError,
-  clearError: clearGeminiError,
-} = useGemini()
-const {
   search,
   getImageByUrl,
-  isLoading: myGoIsLoading,
+  isLoading,
   error: myGoError,
   clearError: clearMyGoError,
 } = useMyGo()
 
-const isLoading = computed(() => geminiIsLoading.value || myGoIsLoading.value)
-
-const initFlag = ref(true)
-
-const keywordInputRef = ref<HTMLInputElement | null>(null)
-const keyword = ref<string | null>(null)
+const keyword = ref<string>(props.keyword ?? '')
 const myGoUrls = ref<MyGoUrl[] | null>(null)
 const selectedImage = ref<string | null>(null)
 const error = ref<string | null>(null)
 
-const displayError = computed(() => geminiError.value || myGoError.value || error.value)
-
-const handleGoClick = async () => {
-  if (props.selectedText) {
-    try {
-      keyword.value = await getResponse(props.selectedText)
-    } catch { }
-  }
-
-  initFlag.value = false
-
-  if (keyword.value === null) {
-    keyword.value = ''
-  }
-  await nextTick()
-  keywordInputRef.value?.focus()
-}
+const displayError = computed(() => myGoError.value || error.value)
 
 const findImages = async (keyword: string | null) => {
   if (!keyword?.trim()) {
@@ -59,7 +30,6 @@ const findImages = async (keyword: string | null) => {
   myGoUrls.value = null
   selectedImage.value = null
   error.value = null
-  clearGeminiError()
   clearMyGoError()
   myGoUrls.value = await search(keyword)
 }
@@ -119,22 +89,17 @@ const handleImgClick = async (url: string, e: Event) => {
   }
 }
 
-const handlePanelMousedown = () => {
-  (window as any).stopCloseMyGoPanel = true
-}
-
-const handlePanelMouseup = (e: Event) => {
-  if (!(window as any).stopCloseMyGoPanel) e.stopPropagation()
-}
+onMounted(() => {
+  if (keyword.value) {
+    findImages(keyword.value)
+  }
+})
 </script>
 <template>
   <div
-    class="flex flex:col r:4 min-w:32 min-h:32 max-w:300 max-h:300 b:1|solid|gray-70 bg:gray-90 overflow:hidden"
-    @mousedown="handlePanelMousedown"
-    @mouseup="handlePanelMouseup"
+    class="flex flex:col overflow:hidden"
   >
     <input
-      v-show="!initFlag && keyword !== null"
       ref="keywordInputRef"
       v-model="keyword"
       type="text"
@@ -142,42 +107,24 @@ const handlePanelMouseup = (e: Event) => {
       class="r:3! bg:gray-70! color:white! b:none! outline:none! p:8! m:12!"
     />
     <div class="rel flex flex:col flex:1">
-      <button
-        v-show="initFlag && !geminiIsLoading"
-        type="button"
-        class="overflow:hidden! w:32! h:32! p:0! m:0! b:none! outline:none! cursor:pointer! r:4!"
-        @click="handleGoClick"
-      >
-        <img
-          :src="MyGoIcon"
-          width="100%"
-          class="pointer-events:none object:contain m:0!"
-        />
-      </button>
-      <div
-        v-show="displayError"
-        class="abs inset:0 flex center-content p:8|16 pointer-events:none"
-      >
-        <span class="fg:red">{{ displayError }}</span>
-      </div>
       <DragScrollBox
-        v-show="!initFlag"
-        class="rel flex overflow-x:auto mt:-6 min-h:150 w:264"
+        class="rel flex overflow-x:auto mt:-6 min-h:150 w:full"
+        :class="[ (myGoUrls?.length ?? 0) > 1 ? 'cursor:grab cursor:grabbing:active' : '']"
       >
         <div class="flex gap:8 p:8|12">
           <div
             v-for="urlData in myGoUrls"
             :key="urlData.url"
-            class="rel flex r:4 user-drag:none user-select:none overflow:hidden cursor:pointer
+            class="rel flex r:4 user-drag:none user-select:none overflow:hidden
                    transform:scale(1.02):hover transform:scale(.95):active ~transform|.25s|ease
-                   width:240 aspect-ratio:16/9
+                   width:320 aspect-ratio:16/9
                    skeleton-image"
             @click="(e: Event) => handleImgClick(urlData.url, e)"
           >
             <img
               :src="urlData.thumb || urlData.url"
               :alt="urlData.alt"
-              width="240"
+              width="320"
               class="aspect-ratio:16/9 object-fit:cover pointer-events:none"
             />
 
@@ -195,6 +142,12 @@ const handlePanelMouseup = (e: Event) => {
           <span>No images found</span>
         </div>
       </DragScrollBox>
+      <div
+        v-show="displayError"
+        class="abs inset:0 flex center-content p:8|16 pointer-events:none"
+      >
+        <span class="fg:red">{{ displayError }}</span>
+      </div>
       <div
         v-show="isLoading"
         class="abs inset:0 flex center-content"
@@ -246,5 +199,23 @@ const handlePanelMouseup = (e: Event) => {
   100% {
     background-position: -100%;
   }
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #333333;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #555555;
+    border-radius: 10px;
+    border: 3px solid #333333;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #777777;
 }
 </style>

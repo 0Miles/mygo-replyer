@@ -47,13 +47,3 @@ const handleDraggingMouseUp = () => {
     <slot></slot>
   </div>
 </template>
-
-<style scoped>
-.drop-scroll-box {
-  cursor: grab;
-}
-
-.content:active {
-  cursor: grabbing;
-}
-</style>

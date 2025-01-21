@@ -1,13 +1,15 @@
 import { render } from 'vue'
-import MyGoPanel from '../components/MyGoPanel.vue'
+import MyGoButton from '../components/MyGoButton.vue'
 import { createPopper } from '@popperjs/core'
+import { useConfigManager } from '../utils/config-manager'
 import '.virtual/master.css'
 
 // import { initCSSRuntime } from '@master/css-runtime'
 // initCSSRuntime()
 
-let panelContainer: HTMLElement | null = null
+let buttonContainer: HTMLElement | null = null
 let popperInstance: any = null
+let resizeObserver: ResizeObserver | null = null
 let referenceElement: HTMLElement | null = null
 const getMousePositionReferenceElement = () => {
   if (!referenceElement) {
@@ -30,18 +32,18 @@ const updateMousePositionReference = (event: MouseEvent) => {
   referenceElement.style.top = `${y}px`
 }
 
-const showMyGoPanel = (selectedText?: string) => {
-  removeMyGoPanel()
+const showMyGoButton = (selectedText?: string) => {
+  removeMyGoButton()
   const referenceElement = getMousePositionReferenceElement()
 
-  panelContainer = document.createElement('div')
-  panelContainer.style.zIndex = '1000'
+  buttonContainer = document.createElement('div')
+  buttonContainer.style.zIndex = '1000'
 
-  render(<MyGoPanel selectedText={selectedText} />, panelContainer)
+  render(<MyGoButton selectedText={selectedText} />, buttonContainer)
 
-  document.body.appendChild(panelContainer)
+  document.body.appendChild(buttonContainer)
 
-  popperInstance = createPopper(referenceElement, panelContainer, {
+  popperInstance = createPopper(referenceElement, buttonContainer, {
     placement: 'top',
     modifiers: [
       {
@@ -58,33 +60,45 @@ const showMyGoPanel = (selectedText?: string) => {
       },
     ],
   })
+
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
+  resizeObserver = new ResizeObserver(() => {
+    popperInstance.update()
+  })
+  resizeObserver.observe(buttonContainer)
 }
 
-const removeMyGoPanel = () => {
+const removeMyGoButton = () => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
   if (popperInstance) {
     popperInstance.destroy()
     popperInstance = null
   }
-  if (panelContainer) {
-    render(null, panelContainer)
-    panelContainer.remove()
-    panelContainer = null
+  if (buttonContainer) {
+    render(null, buttonContainer)
+    buttonContainer.remove()
+    buttonContainer = null
   }
 }
 
-;(window as any).stopCloseMyGoPanel = false
+;(window as any).stopCloseMyGoButton = false
 
 let selectionChange = false
 document.addEventListener('selectionchange', () => {
   selectionChange = true
 })
 
-document.addEventListener('mouseup', (event: MouseEvent) => {
+document.addEventListener('mouseup', async (event: MouseEvent) => {
   if (event.button !== 0) {
     return
   }
-  if ((window as any).stopCloseMyGoPanel) {
-    (window as any).stopCloseMyGoPanel = false
+  if ((window as any).stopCloseMyGoButton) {
+    (window as any).stopCloseMyGoButton = false
     return
   }
 
@@ -93,17 +107,15 @@ document.addEventListener('mouseup', (event: MouseEvent) => {
 
   updateMousePositionReference(event)
 
-  const target = event.target as HTMLElement
+  const configManager = useConfigManager()
+  const enableAiRecommend = await configManager.getConfig('enableAiRecommend') ?? true
 
-  if ((!panelContainer || selectionChange) && selectedText) {
+  if (enableAiRecommend && (!buttonContainer || selectionChange) && selectedText) {
     selectionChange = false
-    showMyGoPanel(selectedText)
+    showMyGoButton(selectedText)
   }
-  else if (!panelContainer && target.isContentEditable) {
-    showMyGoPanel()
-  }
-  else {
-    removeMyGoPanel()
+  else if (buttonContainer) {
+    removeMyGoButton()
     if (window.getSelection) {
       window.getSelection()?.removeAllRanges()
     }
