@@ -10,8 +10,19 @@ const props = defineProps<{
   selectedText?: string
 }>()
 
-const { getResponse, isLoading: geminiIsLoading, error: geminiError } = useGemini()
-const { fetchMyGoData, getImageByUrl, isLoading: myGoIsLoading, error: myGoError } = useMyGo()
+const {
+  getResponse,
+  isLoading: geminiIsLoading,
+  error: geminiError,
+  clearError: clearGeminiError,
+} = useGemini()
+const {
+  fetchMyGoData,
+  getImageByUrl,
+  isLoading: myGoIsLoading,
+  error: myGoError,
+  clearError: clearMyGoError,
+} = useMyGo()
 
 const isLoading = computed(() => geminiIsLoading.value || myGoIsLoading.value)
 
@@ -26,10 +37,15 @@ const error = ref<string | null>(null)
 const displayError = computed(() => geminiError.value || myGoError.value || error.value)
 
 const handleGoClick = async () => {
-  initFlag.value = false
   if (props.selectedText) {
-    keyword.value = await getResponse(props.selectedText)
-  } else {
+    try {
+      keyword.value = await getResponse(props.selectedText)
+    } catch { }
+  }
+
+  initFlag.value = false
+
+  if (keyword.value === null) {
     keyword.value = ''
   }
   await nextTick()
@@ -43,6 +59,8 @@ const findImages = async (keyword: string | null) => {
   myGoUrls.value = null
   selectedImage.value = null
   error.value = null
+  clearGeminiError()
+  clearMyGoError()
   myGoUrls.value = await fetchMyGoData(keyword)
 }
 const findImagesDebounced = debounce(findImages, 1000)
@@ -51,7 +69,7 @@ watch(() => keyword.value, (keyword) => {
   findImagesDebounced(keyword)
 })
 
-async function copyBase64ToClipboardAsPng(base64Image: string) {
+const copyBase64ToClipboardAsPng = async (base64Image: string) => {
   try {
     // 解析 Base64 並創建一個圖像對象
     const img = new Image()
@@ -115,18 +133,6 @@ const handlePanelMouseup = (e: Event) => {
     @mousedown="handlePanelMousedown"
     @mouseup="handlePanelMouseup"
   >
-    <button
-      v-show="initFlag"
-      type="button"
-      class="overflow:hidden! w:32! h:32! p:0! m:0! b:none! outline:none! cursor:pointer! r:4!"
-      @click="handleGoClick"
-    >
-      <img
-        :src="MyGoIcon"
-        width="100%"
-        class="pointer-events:none object:contain"
-      />
-    </button>
     <input
       v-show="!initFlag && keyword !== null"
       ref="keywordInputRef"
@@ -135,52 +141,67 @@ const handlePanelMouseup = (e: Event) => {
       placeholder="Search images..."
       class="r:3! bg:gray-70! color:white! b:none! outline:none! p:8! m:12!"
     />
-    <DragScrollBox
-      v-show="!initFlag"
-      class="rel flex overflow-x:auto mt:-6 min-h:150 w:264"
-    >
-      <div class="flex gap:8 p:8|12">
-        <div
-          v-for="urlData in myGoUrls"
-          :key="urlData.url"
-          class="rel flex r:4 user-drag:none user-select:none overflow:hidden cursor:pointer
-                 transform:scale(1.02):hover transform:scale(.95):active ~transform|.25s|ease
-                 width:240 aspect-ratio:16/9
-                 skeleton-image"
-          @click="(e: Event) => handleImgClick(urlData.url, e)"
-        >
-          <img
-            :src="urlData.url"
-            :alt="urlData.alt"
-            width="240"
-            class="aspect-ratio:16/9 object-fit:cover pointer-events:none"
-          />
-
+    <div class="rel flex flex:col flex:1">
+      <button
+        v-show="initFlag && !geminiIsLoading"
+        type="button"
+        class="overflow:hidden! w:32! h:32! p:0! m:0! b:none! outline:none! cursor:pointer! r:4!"
+        @click="handleGoClick"
+      >
+        <img
+          :src="MyGoIcon"
+          width="100%"
+          class="pointer-events:none object:contain m:0!"
+        />
+      </button>
+      <div
+        v-show="displayError"
+        class="abs inset:0 flex center-content p:8|16 pointer-events:none"
+      >
+        <span class="fg:red">{{ displayError }}</span>
+      </div>
+      <DragScrollBox
+        v-show="!initFlag"
+        class="rel flex overflow-x:auto mt:-6 min-h:150 w:264"
+      >
+        <div class="flex gap:8 p:8|12">
           <div
-            class="abs inset:0 flex center-content pointer-events:none ~opacity|.3s|ease-in bg:black/.7 opacity:0 div.copied>{opacity:1}"
+            v-for="urlData in myGoUrls"
+            :key="urlData.url"
+            class="rel flex r:4 user-drag:none user-select:none overflow:hidden cursor:pointer
+                   transform:scale(1.02):hover transform:scale(.95):active ~transform|.25s|ease
+                   width:240 aspect-ratio:16/9
+                   skeleton-image"
+            @click="(e: Event) => handleImgClick(urlData.url, e)"
           >
-            <span class="fg:white">Copied!</span>
+            <img
+              :src="urlData.url"
+              :alt="urlData.alt"
+              width="240"
+              class="aspect-ratio:16/9 object-fit:cover pointer-events:none"
+            />
+
+            <div
+              class="abs inset:0 flex center-content pointer-events:none ~opacity|.3s|ease-in bg:black/.7 opacity:0 div.copied>{opacity:1}"
+            >
+              <span class="fg:white">Copied!</span>
+            </div>
           </div>
         </div>
-      </div>
+        <div
+          v-show="!myGoUrls?.length && !isLoading && !displayError"
+          class="abs inset:0 flex center-content pointer-events:none fg:gray-60"
+        >
+          <span>No images found</span>
+        </div>
+      </DragScrollBox>
       <div
-        v-show="!myGoUrls?.length && !isLoading && !displayError"
-        class="abs inset:0 flex center-content pointer-events:none fg:gray-60"
+        v-show="isLoading"
+        class="abs inset:0 flex center-content"
+        @click.stop
       >
-        <span>No images found</span>
+        <div class="loading f:16"></div>
       </div>
-    </DragScrollBox>
-    <div
-      v-if="displayError"
-      class="abs inset:0 flex center-content p:8|16"
-    >
-      <span class="fg:red">{{ displayError }}</span>
-    </div>
-    <div
-      v-show="isLoading"
-      class="abs inset:0 flex center-content pointer-events:none"
-    >
-      <div class="loading f:16"></div>
     </div>
   </div>
 </template>

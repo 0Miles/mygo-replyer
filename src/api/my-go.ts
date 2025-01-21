@@ -113,5 +113,6 @@ export const useMyGo = () => {
     getImageByUrl,
     isLoading,
     error,
+    clearError: () => error.value = null,
   }
 }

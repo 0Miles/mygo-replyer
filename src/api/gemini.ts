@@ -94,5 +94,6 @@ export function useGemini() {
     getResponse,
     isLoading,
     error,
+    clearError: () => error.value = null,
   }
 }
