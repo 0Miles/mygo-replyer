@@ -1,7 +1,7 @@
 {
   "name": "mygo-replyer",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,6 +17,7 @@
     "@master/css-extractor.vite": "2.0.0-rc.47",
     "@master/css-runtime": "2.0.0-rc.47",
     "@master/css.vue": "2.0.0-rc.47",
+    "@popperjs/core": "^2.11.8",
     "@stylistic/eslint-plugin": "^2.8.0",
     "@types/chrome": "^0.0.297",
     "@types/lodash-es": "^4.17.12",
