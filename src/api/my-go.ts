@@ -1,6 +1,9 @@
 import { ref } from 'vue'
+import MyGoLines from '../constants/my-go.json'
+import { useConfigManager } from '../utils/config-manager'
 
 export type MyGoUrl = {
+  thumb?: string
   url: string
   alt: string
 }
@@ -8,14 +11,15 @@ export type MyGoUrl = {
 export const useMyGo = () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const configManager = useConfigManager()
 
-  // 獲取 MyGo 數據
-  const fetchMyGoData = async (key: string): Promise<MyGoUrl[] | null> => {
+  // 從 miyago9267 獲取 MyGo 截圖 url 數據
+  const searchMiyago9267 = async (keyword: string): Promise<MyGoUrl[] | null> => {
     isLoading.value = true
     error.value = null
 
     try {
-      const apiUrl = `https://mygoapi.miyago9267.com/mygo/img?keyword=${encodeURIComponent(key)}`
+      const apiUrl = `https://mygoapi.miyago9267.com/mygo/img?keyword=${encodeURIComponent(keyword)}`
 
       const response = await fetch(apiUrl)
       if (!response.ok) {
@@ -32,6 +36,29 @@ export const useMyGo = () => {
       return null
     } finally {
       isLoading.value = false
+    }
+  }
+
+  // 從 hydra00400 的台詞庫獲取 MyGo 截圖 url 數據
+  const searchAnonTokyo = (keyword: string): MyGoUrl[] => {
+    const results = MyGoLines.result
+      .filter(x => x.text.includes(keyword))
+      .map(x => ({
+        thumb: `https://cdn.anon-tokyo.com/thumb/thumb/${x.episode}__${x.frame_start}.jpg`,
+        url: `https://anon-tokyo.com/image?frame=${x.frame_start}&episode=${x.episode}`,
+        alt: x.text,
+      }))
+    return results
+  }
+
+  const search = async (keyword: string): Promise<MyGoUrl[] | null> => {
+    const source = await configManager.getConfig('source')
+    switch (source) {
+      case 'miyago9267':
+        return searchMiyago9267(keyword)
+      case 'anon-tokyo':
+      default:
+        return searchAnonTokyo(keyword)
     }
   }
 
@@ -109,7 +136,7 @@ export const useMyGo = () => {
   }
 
   return {
-    fetchMyGoData,
+    search,
     getImageByUrl,
     isLoading,
     error,

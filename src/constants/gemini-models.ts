@@ -1,6 +1,6 @@
 export const geminiModels = {
   default: 'gemini-1.5-pro',
-  models: [
+  data: [
     'gemini-1.5-pro',
     'gemini-1.5-flash',
     'gemini-1.5-flash-8b',

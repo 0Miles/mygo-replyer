@@ -9,9 +9,30 @@ import '.virtual/master.css'
 let panelContainer: HTMLElement | null = null
 let popperInstance: any = null
 let referenceElement: HTMLElement | null = null
+const getMousePositionReferenceElement = () => {
+  if (!referenceElement) {
+    referenceElement = null
+    referenceElement = document.createElement('span')
+    referenceElement.style.pointerEvents = 'none'
+    referenceElement.style.position = 'absolute'
+    referenceElement.style.width = '0px'
+    referenceElement.style.height = '0px'
+    document.body.appendChild(referenceElement)
+  }
+  return referenceElement
+}
+const updateMousePositionReference = (event: MouseEvent) => {
+  const x = event.clientX + window.scrollX
+  const y = event.clientY + window.scrollY
 
-const showMyGoPanel = (referenceElement: HTMLElement, selectedText?: string) => {
+  const referenceElement = getMousePositionReferenceElement()
+  referenceElement.style.left = `${x}px`
+  referenceElement.style.top = `${y}px`
+}
+
+const showMyGoPanel = (selectedText?: string) => {
   removeMyGoPanel()
+  const referenceElement = getMousePositionReferenceElement()
 
   panelContainer = document.createElement('div')
   panelContainer.style.zIndex = '1000'
@@ -69,29 +90,17 @@ document.addEventListener('mouseup', (event: MouseEvent) => {
 
   const selection = window.getSelection()
   const selectedText = selection?.toString().trim()
-  const x = event.clientX + window.scrollX
-  const y = event.clientY + window.scrollY
 
-  if (!referenceElement) {
-    referenceElement = null
-    referenceElement = document.createElement('span')
-    referenceElement.style.pointerEvents = 'none'
-    referenceElement.style.position = 'absolute'
-    referenceElement.style.width = '0px'
-    referenceElement.style.height = '0px'
-    document.body.appendChild(referenceElement)
-  }
-  referenceElement.style.left = `${x}px`
-  referenceElement.style.top = `${y}px`
+  updateMousePositionReference(event)
 
   const target = event.target as HTMLElement
 
   if ((!panelContainer || selectionChange) && selectedText) {
     selectionChange = false
-    showMyGoPanel(referenceElement, selectedText)
+    showMyGoPanel(selectedText)
   }
-  else if (!panelContainer && (target.isContentEditable || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
-    showMyGoPanel(referenceElement)
+  else if (!panelContainer && target.isContentEditable) {
+    showMyGoPanel()
   }
   else {
     removeMyGoPanel()

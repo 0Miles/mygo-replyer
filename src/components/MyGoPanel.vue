@@ -17,7 +17,7 @@ const {
   clearError: clearGeminiError,
 } = useGemini()
 const {
-  fetchMyGoData,
+  search,
   getImageByUrl,
   isLoading: myGoIsLoading,
   error: myGoError,
@@ -61,7 +61,7 @@ const findImages = async (keyword: string | null) => {
   error.value = null
   clearGeminiError()
   clearMyGoError()
-  myGoUrls.value = await fetchMyGoData(keyword)
+  myGoUrls.value = await search(keyword)
 }
 const findImagesDebounced = debounce(findImages, 1000)
 
@@ -175,7 +175,7 @@ const handlePanelMouseup = (e: Event) => {
             @click="(e: Event) => handleImgClick(urlData.url, e)"
           >
             <img
-              :src="urlData.url"
+              :src="urlData.thumb || urlData.url"
               :alt="urlData.alt"
               width="240"
               class="aspect-ratio:16/9 object-fit:cover pointer-events:none"

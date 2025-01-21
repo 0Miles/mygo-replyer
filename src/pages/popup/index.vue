@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue'
 import { useConfigManager } from '../../utils/config-manager'
-import { geminiModels } from '../../utils/gemini-models'
+import { geminiModels } from '../../constants/gemini-models'
+import { sources } from '../../constants/sources'
 
 const configManager = useConfigManager()
 
 const configModel = reactive<Record<string, string>>({
   geminiApiKey: '',
   model: geminiModels.default,
+  sources: sources.default,
 })
 
 const loadKey = async () => {
   try {
-    const key = await configManager.getConfig('geminiApiKey')
-    const model = await configManager.getConfig('model')
-    configModel.geminiApiKey = key || ''
-    configModel.model = model || geminiModels.default
+    configModel.geminiApiKey = await configManager.getConfig('geminiApiKey') || ''
+    configModel.model = await configManager.getConfig('model') || geminiModels.default
+    configModel.source = await configManager.getConfig('source') || sources.default
   } catch (error) {
     console.error('Failed to load Gemini Key:', error)
   }
@@ -57,11 +58,27 @@ onMounted(() => {
         @change="saveKey('model')"
       >
         <option
-          v-for="model in geminiModels.models"
+          v-for="model in geminiModels.data"
           :key="model"
           :value="model"
         >
           {{ model }}
+        </option>
+      </select>
+
+      <label>Source</label>
+      <select
+        id="source"
+        v-model="configModel.source"
+        class="r:3 bg:gray-70 color:white b:none outline:none p:8"
+        @change="saveKey('source')"
+      >
+        <option
+          v-for="source in sources.data"
+          :key="source"
+          :value="source"
+        >
+          {{ source }}
         </option>
       </select>
     </div>
