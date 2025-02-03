@@ -33,11 +33,11 @@ pnpm build
 ![why](docs/470897432_28894648063482932_2267309378214415704_n.jpg)
 
 ## Credits
-- 受 RyuuMeow 的 NeverThinkAutoReply 啟發  
+- 受 [RyuuMeow](https://github.com/RyuuMeow) 的 NeverThinkAutoReply 啟發  
 https://github.com/RyuuMeow/NeverThinkAutoReply
 
-- 使用了 MyGO-Searcher 的 API  
+- 使用了 [miyago9267](https://github.com/miyago9267) 的 MyGO-Searcher API  
 https://github.com/miyago9267/MyGO-Searcher
 
-- 使用了 hydra00400 的台詞資料庫與 anon-tokyo API  
-https://forum.gamer.com.tw/C.php?bsn=60076&snA=8289364
+- 使用了 [VirtualDruid](https://github.com/VirtualDruid) 的台詞資料庫與 anon-tokyo API  
+https://forum.gamer.com.tw/C.php?bsn=60076&snA=8289364  
