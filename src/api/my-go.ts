@@ -18,7 +18,7 @@ export const useMyGo = () => {
     error.value = null
 
     try {
-      const apiUrl = `https://api-3.tomorin.cc/public-api/ave-search?keyword=${encodeURIComponent(keyword)}&search_type=both`
+      const apiUrl = `https://api-3.tomorin.cc/api/search?keyword=${encodeURIComponent(keyword)}&sources=mygo%2Cave`
 
       const response = await fetch(apiUrl)
       if (!response.ok) {
@@ -28,7 +28,7 @@ export const useMyGo = () => {
 
       const data = await response.json()
       const result = data?.data.map((item: any) => ({
-        url: `https://api-3.tomorin.cc/public-api/ave-frames?episode=${item.episode}&frame_start=${item.frame_start}&frame_end=${item.frame_end}`,
+        url: `https://api-3.tomorin.cc/api/${item.source === 'mygo' ? 'frame' : 'ave-frames'}?episode=${item.episode}&frame_start=${item.frame_start}&frame_end=${item.frame_end}`,
         alt: item.text ?? item.google_gemini_output,
       }))
 
