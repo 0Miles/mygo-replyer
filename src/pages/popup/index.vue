@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useConfigManager } from '../../utils/config-manager'
 import { geminiModels } from '../../constants/gemini-models'
 import { sources } from '../../constants/sources'
@@ -17,10 +17,7 @@ const configModel = reactive<Record<string, any>>({
 
 const loadKey = async () => {
   try {
-    configModel.geminiApiKey = await configManager.getConfig('geminiApiKey') || ''
-    configModel.enableAiRecommend = await configManager.getConfig('enableAiRecommend') ?? true
-    configModel.model = await configManager.getConfig('model') || geminiModels.default
-    configModel.source = await configManager.getConfig('source') || sources.default
+    Object.assign(configModel, await configManager.getAllConfigs())
   } catch (error) {
     console.error('Failed to load Gemini Key:', error)
   }
@@ -42,9 +39,7 @@ watch(configModel, (configModel: Record<string, any>) => {
 
 const isSettingOpen = ref(false)
 
-onMounted(async () => {
-  await loadKey()
-})
+loadKey()
 </script>
 <template>
   <div
@@ -100,6 +95,7 @@ onMounted(async () => {
             <label>Model</label>
             <select
               id="model"
+              :key="configModel.model"
               v-model="configModel.model"
               class="r:3 bg:gray-70 color:white b:none outline:none p:8"
             >
