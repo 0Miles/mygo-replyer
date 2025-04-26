@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "MyGO!!!!!",
   "description": "為什麼就不能像其他家的孩子一樣正常講話",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "permissions": [
     "storage",
     "unlimitedStorage"
