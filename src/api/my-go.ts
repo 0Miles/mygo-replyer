@@ -92,6 +92,7 @@ export const useMyGo = () => {
             const base64Data = response.base64Data
             chrome.storage.local.set({ [url]: base64Data }, () => {
               if (chrome.runtime.lastError) {
+                console.error('Error downloading image:', chrome.runtime.lastError)
                 reject(new Error('Failed to save image to storage'))
               } else {
                 resolve(base64Data)
@@ -130,7 +131,7 @@ export const useMyGo = () => {
       } else {
         try {
           return await downloadImageAndSaveToStorage(url)
-        } catch {
+        } catch (err: any) {
           error.value = 'Failed to download image'
           return null
         }

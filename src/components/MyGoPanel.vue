@@ -18,8 +18,13 @@ const {
 
 const keyword = ref<string>(props.keyword ?? '')
 const myGoUrls = ref<MyGoUrl[] | null>(null)
+const displayedUrls = ref<MyGoUrl[]>([])
 const selectedImage = ref<string | null>(null)
 const error = ref<string | null>(null)
+const loadCount = ref<number>(3) // 初始載入數量
+const scrollBoxRef = ref<InstanceType<typeof DragScrollBox> | null>(null)
+const contentRef = ref<HTMLElement | null>(null)
+const imagesCache = ref<Map<string, string>>(new Map()) // 存儲 URL 到 base64 的映射
 
 const displayError = computed(() => myGoError.value || error.value)
 
@@ -28,11 +33,40 @@ const findImages = async (keyword: string | null) => {
     return
   }
   myGoUrls.value = null
+  displayedUrls.value = []
   selectedImage.value = null
   error.value = null
   clearMyGoError()
+  imagesCache.value.clear()
+
   myGoUrls.value = await search(keyword)
+
+  if (myGoUrls.value && myGoUrls.value.length > 0) {
+    const urls = myGoUrls.value.slice(0, loadCount.value)
+    loadImagesForUrls(urls)
+    displayedUrls.value = urls
+  }
 }
+
+const loadImagesForUrls = async (urls: MyGoUrl[]) => {
+  for (const urlData of urls) {
+    if (!imagesCache.value.has(urlData.url)) {
+      loadImageForUrl(urlData.url)
+    }
+  }
+}
+
+const loadImageForUrl = async (url: string) => {
+  try {
+    const base64 = await getImageByUrl(url)
+    if (base64) {
+      imagesCache.value.set(url, base64)
+    }
+  } catch (e) {
+    console.error('Failed to load image:', e)
+  }
+}
+
 const findImagesDebounced = debounce(findImages, 1000)
 
 watch(() => keyword.value, (keyword) => {
@@ -41,7 +75,6 @@ watch(() => keyword.value, (keyword) => {
 
 const copyBase64ToClipboardAsPng = async (base64Image: string) => {
   try {
-    // 解析 Base64 並創建一個圖像對象
     const img = new Image()
     img.src = base64Image
 
@@ -50,7 +83,6 @@ const copyBase64ToClipboardAsPng = async (base64Image: string) => {
       img.onerror = err => reject(err)
     })
 
-    // 創建 Canvas，將 JPEG 圖像繪製到 Canvas 上
     const canvas = document.createElement('canvas')
     canvas.width = img.width
     canvas.height = img.height
@@ -60,10 +92,8 @@ const copyBase64ToClipboardAsPng = async (base64Image: string) => {
 
     ctx.drawImage(img, 0, 0)
 
-    // 將 Canvas 內容導出為 PNG Base64
     const pngBase64 = canvas.toDataURL('image/png')
 
-    // 轉換 PNG Base64 為 Blob
     const byteString = atob(pngBase64.split(',')[1])
     const arrayBuffer = new Uint8Array(byteString.length)
     for (let i = 0; i < byteString.length; i++) {
@@ -71,7 +101,6 @@ const copyBase64ToClipboardAsPng = async (base64Image: string) => {
     }
     const blob = new Blob([arrayBuffer], { type: 'image/png' })
 
-    // 創建 ClipboardItem 並複製到剪貼簿
     const clipboardItem = new ClipboardItem({ 'image/png': blob })
     await navigator.clipboard.write([clipboardItem])
   } catch {
@@ -89,9 +118,37 @@ const handleImgClick = async (url: string, e: Event) => {
   }
 }
 
+// 監聽滾動事件，當滾動到80%時載入更多圖片
+const handleScroll = debounce((e: Event) => {
+  const target = e.target as HTMLElement
+  if (!target || !myGoUrls.value) return
+
+  const { scrollLeft, scrollWidth, clientWidth } = target
+  const scrollPercentage = (scrollLeft + clientWidth) / scrollWidth
+
+  // 當滾動到80%時載入更多圖片
+  if (scrollPercentage > 0.8 && displayedUrls.value.length < myGoUrls.value.length) {
+    const nextBatch = myGoUrls.value.slice(
+      displayedUrls.value.length,
+      displayedUrls.value.length + loadCount.value,
+    )
+    displayedUrls.value = [...displayedUrls.value, ...nextBatch]
+    // 為新加載的 URL 預加載圖片
+    loadImagesForUrls(nextBatch)
+  }
+}, 200)
+
 onMounted(() => {
   if (keyword.value) {
     findImages(keyword.value)
+  }
+
+  // 獲取 DragScrollBox 內容元素並添加滾動事件監聽
+  if (scrollBoxRef.value) {
+    contentRef.value = scrollBoxRef.value.$el
+    if (contentRef.value) {
+      contentRef.value.addEventListener('scroll', handleScroll)
+    }
   }
 })
 </script>
@@ -108,12 +165,13 @@ onMounted(() => {
     />
     <div class="rel flex flex:col flex:1">
       <DragScrollBox
+        ref="scrollBoxRef"
         class="rel flex overflow-x:auto mt:-6 min-h:150 w:full"
         :class="[ (myGoUrls?.length ?? 0) > 1 ? 'cursor:grab cursor:grabbing:active' : '']"
       >
         <div class="flex gap:8 p:8|12">
           <div
-            v-for="urlData in myGoUrls"
+            v-for="urlData in displayedUrls"
             :key="urlData.url"
             class="rel flex r:4 user-drag:none user-select:none overflow:hidden
                    transform:scale(1.02):hover transform:scale(.95):active ~transform|.25s|ease
@@ -121,8 +179,10 @@ onMounted(() => {
                    skeleton-image"
             @click="(e: Event) => handleImgClick(urlData.url, e)"
           >
+            <!-- 使用 base64 圖片 -->
             <img
-              :src="urlData.thumb || urlData.url"
+              v-if="imagesCache.get(urlData.url)"
+              :src="imagesCache.get(urlData.url)"
               :alt="urlData.alt"
               width="320"
               class="aspect-ratio:16/9 object-fit:cover pointer-events:none"
