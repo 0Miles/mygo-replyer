@@ -1,7 +1,7 @@
 export const sources = {
-  default: 'anon-tokyo',
+  default: 'tomorin.cc',
   data: [
-    'anon-tokyo',
     'miyago9267',
+    'tomorin.cc',
   ],
 }

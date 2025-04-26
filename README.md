@@ -41,3 +41,6 @@ https://github.com/miyago9267/MyGO-Searcher
 
 - 使用了 [VirtualDruid](https://github.com/VirtualDruid) 的台詞資料庫與 anon-tokyo API  
 https://forum.gamer.com.tw/C.php?bsn=60076&snA=8289364  
+
+- 使用了 [eason102](https://github.com/eason102) 的 Tomorin API  
+https://www.threads.net/@yichen._.0403/post/DFj6WZACF2j

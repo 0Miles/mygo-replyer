@@ -1,5 +1,4 @@
 import { ref } from 'vue'
-import MyGoLines from '../constants/my-go.json'
 import { useConfigManager } from '../utils/config-manager'
 
 export type MyGoUrl = {
@@ -12,6 +11,35 @@ export const useMyGo = () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const configManager = useConfigManager()
+
+  // 從 tomorin.cc 獲取 MyGo 截圖 url 數據
+  const searchTomorinCc = async (keyword: string): Promise<MyGoUrl[] | null> => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const apiUrl = `https://api-3.tomorin.cc/public-api/ave-search?keyword=${encodeURIComponent(keyword)}&search_type=both`
+
+      const response = await fetch(apiUrl)
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`API error: ${response.status} - ${errorText}`)
+      }
+
+      const data = await response.json()
+      const result = data?.data.map((item: any) => ({
+        url: `https://api-3.tomorin.cc/public-api/ave-frames?episode=${item.episode}&frame_start=${item.frame_start}&frame_end=${item.frame_end}`,
+        alt: item.text ?? item.google_gemini_output,
+      }))
+
+      return result
+    } catch (err: any) {
+      error.value = err.message || 'Unknown error'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
 
   // 從 miyago9267 獲取 MyGo 截圖 url 數據
   const searchMiyago9267 = async (keyword: string): Promise<MyGoUrl[] | null> => {
@@ -39,26 +67,14 @@ export const useMyGo = () => {
     }
   }
 
-  // 從 hydra00400 的台詞庫獲取 MyGo 截圖 url 數據
-  const searchAnonTokyo = (keyword: string): MyGoUrl[] => {
-    const results = MyGoLines.result
-      .filter(x => x.text.includes(keyword))
-      .map(x => ({
-        thumb: `https://cdn.anon-tokyo.com/thumb/thumb/${x.episode}__${x.frame_start}.jpg`,
-        url: `https://anon-tokyo.com/image?frame=${x.frame_start}&episode=${x.episode}`,
-        alt: x.text,
-      }))
-    return results
-  }
-
   const search = async (keyword: string): Promise<MyGoUrl[] | null> => {
     const source = await configManager.getConfig('source')
     switch (source) {
       case 'miyago9267':
         return searchMiyago9267(keyword)
-      case 'anon-tokyo':
+      case 'tomorin.cc':
       default:
-        return searchAnonTokyo(keyword)
+        return searchTomorinCc(keyword)
     }
   }
 
