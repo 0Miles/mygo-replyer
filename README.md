@@ -11,7 +11,7 @@
 
 ## 安裝
 1. 下載已建置的擴充元件 zip 檔後解壓縮
-[https://github.com/0Miles/mygo-replyer/releases/download/v1.0.1/mygo-replyer.zip](https://github.com/0Miles/mygo-replyer/releases/download/v1.0.1/mygo-replyer.zip)
+[https://github.com/0Miles/mygo-replyer/releases/download/v1.0.3/mygo-replyer.zip](https://github.com/0Miles/mygo-replyer/releases/download/v1.0.3/mygo-replyer.zip)
 
 1. 在 [chrome://extensions/](chrome://extensions/) 打開右上角的 `開發人員模式`
 ![step2](docs/step2.png)
@@ -33,14 +33,14 @@ pnpm build
 ![why](docs/470897432_28894648063482932_2267309378214415704_n.jpg)
 
 ## Credits
-- 受 [RyuuMeow](https://github.com/RyuuMeow) 的 NeverThinkAutoReply 啟發  
+- 受 [RyuuMeow](https://github.com/RyuuMeow) 的 NeverThinkAutoReply 啟發
 https://github.com/RyuuMeow/NeverThinkAutoReply
 
-- 使用了 [miyago9267](https://github.com/miyago9267) 的 MyGO-Searcher API  
+- 使用了 [miyago9267](https://github.com/miyago9267) 的 MyGO-Searcher API
 https://github.com/miyago9267/MyGO-Searcher
 
-- 使用了 [VirtualDruid](https://github.com/VirtualDruid) 的台詞資料庫與 anon-tokyo API  
-https://forum.gamer.com.tw/C.php?bsn=60076&snA=8289364  
+- 使用了 [VirtualDruid](https://github.com/VirtualDruid) 的台詞資料庫與 anon-tokyo API
+https://forum.gamer.com.tw/C.php?bsn=60076&snA=8289364
 
-- 使用了 [eason102](https://github.com/eason102) 的 Tomorin API  
+- 使用了 [eason102](https://github.com/eason102) 的 Tomorin API
 https://www.threads.net/@yichen._.0403/post/DFj6WZACF2j
